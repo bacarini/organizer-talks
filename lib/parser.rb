@@ -3,26 +3,22 @@ module Parser
 
   def resolve(file)
     file.each_with_object({}) do |line, hash|
-      hash[talk_from(line).strip!] = minutes_from(line)
+      talk, time = line.match(/(.*?)\s+(lightning|\d+)(?:min|$)/).captures
+      raise(
+        Exceptions::OrganizerTalksException,
+        "Error: Talk: #{talk} is repeated"
+      ) if hash.include? talk
+
+      hash[talk] = minutes_from(time)
     end
+  rescue NoMethodError
+    raise Exceptions::OrganizerTalksException, "Error: Please check your input and try again!"
   end
 
   private
   module_function
 
-  def talk_from(line)
-    if lightning?(line)
-      line.match(/(\D+)(lightning)/i).captures.first
-    else
-      line.match(/(\D+)/i).captures.first
-    end
-  end
-
-  def minutes_from(line)
-    lightning?(line) ? 5 : line.scan(/\d+/).first.to_i
-  end
-
-  def lightning?(line)
-    line =~ /lightning/
+  def minutes_from(time)
+    time =~ /lightning/ ? 5 : time.to_i
   end
 end
