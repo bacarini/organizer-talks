@@ -1,0 +1,8 @@
+*.sw*
+bin/autospec
+bin/bundler
+bin/coderay
+bin/htmldiff
+bin/ldiff
+bin/pry
+bin/rspec
