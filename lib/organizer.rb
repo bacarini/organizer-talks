@@ -1,45 +1,45 @@
-class Organizer
-  attr_accessor :talks
+module Organizer
+  module_function
+  SESSION_TIME = {morning: 180, afternoon: 240}
 
-  def initialize(file)
-    self.talks = Parser.resolve file
-  end
+  def process(talks, tracks_number)
+    raise(
+      Exceptions::OrganizerTalksException,
+      "Error: None tracks number was given"
+    ) unless tracks_number > 0
 
-  def process
-   f =  first_track
-   puts f
-   s = second_track
-   puts s
-   binding.pry
-  end
-
-  def shuffle
-    Hash[talks.to_a.sample(talks.length)]
-  end
-
-  def first_track
-    minutes = 0
-    talks.each_with_object({}) do |(k, v), hash|
-      if minutes + v == 180
-        return hash
-      elsif minutes + v > 180
-        next
-      end
-      minutes = minutes + v
-      hash[k] = v
+    {}.tap do |tracks|
+      tracks_number.times { |index| tracks[index] = find_best_track(talks) }
+      raise(
+        Exceptions::OrganizerTalksException,
+        "Error: The sum of talks duration exceeded time available"
+      ) unless talks.empty?
     end
   end
 
-  def second_track
-    minutes = 0
-    talks.each_with_object({}) do |(k, v), hash|
-      if minutes + v == 180
-        return talks - hash
-      elsif minutes + v > 180
-        next
-      end
-      minutes = minutes + v
-      hash[k] = v
+  private
+  module_function
+
+  def find_best_track(talks)
+    SESSION_TIME.each_with_object({}) do |(session, time), new_track|
+      new_track[session] = find_session time, talks
+      reject! new_track[session], talks
     end
+  end
+
+  def find_session(time, talks)
+    minutes = 0
+    talks.each_with_object({}) do |(talk, duration), hash|
+      tmp = minutes + duration
+      next if tmp > time
+
+      hash[talk], minutes = duration, tmp
+
+      return hash if tmp == time
+    end
+  end
+
+  def reject!(list, talks)
+    talks.delete_if { |k,_| list.keys.include? k }
   end
 end
