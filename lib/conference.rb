@@ -11,6 +11,6 @@ class Conference
   end
 
   def shuffled_talks
-    Hash[talks.to_a.sample(talks.length)]
+    Hash[talks.to_a.shuffle]
   end
 end
