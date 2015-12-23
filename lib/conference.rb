@@ -7,7 +7,7 @@ class Conference
   end
 
   def organize
-   self.organized_talks = Organizer.process shuffled_talks, tracks_number
+   self.organized_talks = Organizer.process talks, tracks_number
   end
 
   def shuffled_talks
